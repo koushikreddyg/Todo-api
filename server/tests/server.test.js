@@ -1,10 +1,13 @@
 const request=require('supertest');
 const expect=require('expect');
+const {ObjectID}=require('mongodb');
 const {app}=require('../server');
 const {Todo}=require('./../models/todo');
 const todos=[{
+  _id: new ObjectID(),
   text: 'first text'
 },{
+  _id: new ObjectID(),
   text: 'Second text'
 }
 ]
@@ -68,5 +71,29 @@ describe('add Get TODO route',()=>{
     .expect((res)=>{
       expect(res.body.result.length).toBe(2);
     }).end(done)
+  })
+})
+describe('get todo of particular id',()=>{
+  it('should get todo',(done)=>{
+    request(app)
+    .get(`/todos/${todos[0]._id.toHexString()}`)
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todos.text).toBe('first text')
+    })
+    .end(done)
+  })
+
+  it('should return 402 if id is not found',(done)=>{
+    request(app)
+    .get(`/todos/${new ObjectID().toHexString()}`)
+    .expect(402)
+    .end(done)
+  })
+  it('should return 404 if id is invalid',(done)=>{
+    request(app)
+    .get(`/todos/1234`)
+    .expect(404)
+    .end(done)
   })
 })

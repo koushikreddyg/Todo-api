@@ -33,11 +33,11 @@ app.get('/todos/:id',(req,res)=>{
           }
   Todo.findById(id).then((todos)=>{
     if(!todos){
-      return res.status(404).send('user is not found')
+      return res.status(402).send('user is not found')
     }
     res.send({todos})
 }).catch((e)=>{
-  res.status(404).send('id not found')
+  res.status(401).send('id not found')
 })
 
 })
