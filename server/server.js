@@ -7,12 +7,21 @@ var {Todo}=require('./models/todo');
 
 var app=express();
 app.use(bodyParser.json());
+
 app.post('/todos',(req,res)=>{
   var todo= new Todo({
     text: req.body.text
   })
   todo.save().then((doc)=>{
     res.send(doc)
+  },(e)=>{
+    res.status(401).send(e);
+  })
+})
+
+app.get('/todos',(req,res)=>{
+  Todo.find().then(result=>{
+    res.status(200).send({result})
   },(e)=>{
     res.status(401).send(e);
   })
