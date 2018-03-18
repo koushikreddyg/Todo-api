@@ -2,10 +2,17 @@ const request=require('supertest');
 const expect=require('expect');
 const {app}=require('../server');
 const {Todo}=require('./../models/todo');
+const todos=[{
+  text: 'first text'
+},{
+  text: 'Second text'
+}
+]
 beforeEach((done)=>{
-  Todo.remove({}).then(()=>
-    done()
-  )
+  Todo.remove({}).then(()=> Todo.insertMany(todos)
+  ).then(()=>{
+    return done()
+  })
 })
 describe('Post /todos',()=>{
   it('should create new todo',(done)=>{
@@ -21,7 +28,7 @@ describe('Post /todos',()=>{
         if(err){
           return done(err)
         }
-        Todo.find().then((todos)=>{
+        Todo.find({text}).then((todos)=>{
           expect(todos.length).toBe(1);
           expect(todos[0].text).toBe(text);
           done()
@@ -44,12 +51,22 @@ describe('Post /todos',()=>{
         return done(err)
       }
       Todo.find().then(res=>{
-        expect(res.length).toBe(0);
+        expect(res.length).toBe(2);
         //expect(res[0].text).toBe(undefined)
         done()
       },(e)=>{
         done(e)
       })
     })
+  })
+})
+describe('add Get TODO route',()=>{
+  it('should fetch values',(done)=>{
+    request(app)
+    .get('/todos')
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.result.length).toBe(2);
+    }).end(done)
   })
 })
