@@ -8,7 +8,9 @@ const todos=[{
   text: 'first text'
 },{
   _id: new ObjectID(),
-  text: 'Second text'
+  text: 'Second text',
+  completed: true,
+  completedAt: 333,
 }
 ]
 beforeEach((done)=>{
@@ -132,6 +134,36 @@ describe('testing DELETE /todos',()=>{
     .delete(`/todos/1234`)
     .expect(404)
     .expect('Id is invalid')
+    .end(done)
+  })
+})
+
+describe('test the patch method',()=>{
+  it('Should update to Completed=false',(done)=>{
+    let text='changed text of 2'
+    request(app)
+    .patch(`/todos/${todos[1]._id}`)
+    .send({completed:false, text})
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todos.text).toBe(text);
+      expect(res.body.todos.completed).toBe(false);
+      expect(res.body.todos.completedAt).toNotExist()
+    })
+    .end(done)
+  })
+
+  it('Should update completed=true',(done)=>{
+    let text='changed text of 1'
+    request(app)
+    .patch(`/todos/${todos[0]._id}`)
+    .send({completed:true, text})
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todos.text).toBe(text);
+      expect(res.body.todos.completed).toBe(true);
+      expect(res.body.todos.completedAt).toBeA('number')
+    })
     .end(done)
   })
 })
