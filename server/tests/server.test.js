@@ -97,3 +97,41 @@ describe('get todo of particular id',()=>{
     .end(done)
   })
 })
+
+describe('testing DELETE /todos',()=>{
+  it('Should delete todo',(done)=>{
+    request(app)
+    .delete(`/todos/${todos[0]._id.toHexString()}`)
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todos._id).toBe(todos[0]._id.toString())
+    })
+    .end((err,result)=>{
+      if(err){
+        return done(err)
+      }
+      Todo.findById(todos[0]._id.toHexString()).then((res)=>{
+        expect(res).toBeFalsy();
+        done()
+      },(e)=>{
+        done(e)
+      })
+    })
+  })
+
+  it('should not find todo',(done)=>{
+    request(app)
+    .delete(`/todos/${new ObjectID().toHexString()}`)
+    .expect(404)
+    .expect('Todo is not present')
+    .end(done)
+  })
+
+  it('Should get invalid id',(done)=>{
+    request(app)
+    .delete(`/todos/1234`)
+    .expect(404)
+    .expect('Id is invalid')
+    .end(done)
+  })
+})
