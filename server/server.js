@@ -6,6 +6,7 @@ const {ObjectID}=require('mongodb');
 const {mongoose}=require('./db/mongoose')
 const {User}=require('./models/user');
 const {Todo}=require('./models/todo');
+var {authenticate}=require('./middleware/authenticate');
 
 var app=express();
 const port = process.env.PORT;
@@ -20,6 +21,10 @@ app.post('/todos',(req,res)=>{
   },(e)=>{
     res.status(401).send(e);
   })
+})
+
+app.get(`/users/me`,authenticate, (req,res)=>{
+  res.send(req.user)
 })
 
 app.get('/todos',(req,res)=>{
@@ -86,7 +91,7 @@ app.delete('/todos/:id',(req,res)=>{
 app.post(`/users`,(req,res)=>{
   const body=_.pick(req.body,['email', 'password'])
   var user=new User(body)
-  user.save().then(()=>{
+  user.save().then((user)=>{
     return user.generateAuthToken()
     //res.send(user)
   }).then((token)=>{
