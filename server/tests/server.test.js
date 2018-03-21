@@ -3,22 +3,10 @@ const expect=require('expect');
 const {ObjectID}=require('mongodb');
 const {app}=require('../server');
 const {Todo}=require('./../models/todo');
-const todos=[{
-  _id: new ObjectID(),
-  text: 'first text'
-},{
-  _id: new ObjectID(),
-  text: 'Second text',
-  completed: true,
-  completedAt: 333,
-}
-]
-beforeEach((done)=>{
-  Todo.remove({}).then(()=> Todo.insertMany(todos)
-  ).then(()=>{
-    return done()
-  })
-})
+const {User}=require('./../models/user');
+const {todos, populateTodos, users, populateUsers}=require('./seed/seed');
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 describe('Post /todos',()=>{
   it('should create new todo',(done)=>{
     const text= 'test Todo text';
@@ -164,6 +152,72 @@ describe('test the patch method',()=>{
       expect(res.body.todos.completed).toBe(true);
       expect(res.body.todos.completedAt).toBeA('number')
     })
+    .end(done)
+  })
+})
+describe('GET /users/me',()=>{
+  it('should return user if authenticated',(done)=>{
+    request(app)
+    .get('/users/me')
+    .set('x-auth',users[0].tokens[0].token)
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body._id).toBe(users[0]._id.toHexString())
+      expect(res.body.email).toBe(users[0].email)
+    })
+    .end(done)
+  })
+  it('should return 401 if not authenticated',(done)=>{
+    request(app)
+    .get('/users/me')
+    .expect(401)
+    .expect((res)=>{
+      expect(res.body).toEqual({})
+    })
+    .end(done)
+  })
+})
+describe('POST /users',()=>{
+  it('should create User ',(done)=>{
+    var email='example@example.com';
+    var password='password';
+    request(app)
+    .post('/users')
+    .send({email,password})
+    .expect(200)
+    .expect((res)=>{
+      expect(res.headers['x-auth']).toExist();
+      expect(res.body._id).toExist()
+      expect(res.body.email).toBe(email)
+    })
+    .end((err)=>{
+      if(err){
+        return done(err);
+      }
+      User.findOne({email}).then((user)=>{
+        expect(user).toExist()
+        expect(user.password).toNotBe(password)
+        done()
+      })
+    })
+
+  });
+  it('should return validation errors if request is invalid',(done)=>{
+    var email='kkfsbkd';
+    var password='8787y';
+    request(app)
+    .post('/users')
+    .send({email,password})
+    .expect(400)
+    .end(done)
+  });
+  it('should not create user if email is in use',(done)=>{
+    var email='koushik@email.com';
+    var password='1233444';
+    request(app)
+    .post('/users')
+    .send({email,password})
+    .expect(400)
     .end(done)
   })
 })
