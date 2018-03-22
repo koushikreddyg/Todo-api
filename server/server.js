@@ -6,6 +6,7 @@ const {ObjectID}=require('mongodb');
 const {mongoose}=require('./db/mongoose')
 const {User}=require('./models/user');
 const {Todo}=require('./models/todo');
+const bcrypt=require('bcryptjs');
 var {authenticate}=require('./middleware/authenticate');
 
 var app=express();
@@ -87,7 +88,19 @@ app.delete('/todos/:id',(req,res)=>{
     res.status(400).send(e)
   })
 })
-
+app.post('/users/login',(req,res)=>{
+  var body=_.pick(req.body,['email', 'password']);
+  User.findByCredentials(body.email, body.password).then((user)=>{
+return user.generateAuthToken().then((token)=>{
+  res.header('x-auth',token).send(user);
+})
+  }).catch((e)=>{
+    res.status(400).send(e)
+  })
+  // User.findOne({email:req.body.email}).then((user)=>{
+  //
+  // })
+})
 app.post(`/users`,(req,res)=>{
   const body=_.pick(req.body,['email', 'password'])
   var user=new User(body)
