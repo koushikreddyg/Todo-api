@@ -6,10 +6,10 @@ if(env==='development' || env==='test'){
 Object.keys(envConfig).forEach((key)=>{
   process.env[key]=envConfig[key];
 })
+}else if(env==='production'){
+  process.env.MONGODB_URI='mongodb://koushik:password@ds211029.mlab.com:11029/practicemongo';
 }
-// if(env==='production'){
-//   process.env.MONGODB_URI='mongodb://koushik:password@ds211029.mlab.com:11029/practicemongo';
-// }else if(env==='development'){
+// else if(env==='development'){
 //   process.env.MONGODB_URI='mongodb://localhost:27017/TodoApp';
 //   process.env.PORT=3000;
 // } else if(env==='test'){
