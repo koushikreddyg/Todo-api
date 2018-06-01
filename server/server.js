@@ -84,6 +84,9 @@ app.patch(`/todos/:id`,authenticate, (req,res)=>{
   })
 })
 
+console.log('hi there')
+
+
 app.delete('/todos/:id',authenticate,(req,res)=>{
   const id=req.params.id;
   if(!ObjectID.isValid(id)){
